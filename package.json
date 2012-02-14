@@ -1,6 +1,6 @@
 {
   "name"          : "pebblecore",
-  "description"   : "JS Resolve models",
+  "description"   : "JS core tools for Pebbles applications",
   "url"           : "http://resolvehq.com",
   "author"        : "Bengler <bengler@bengler.no>",
   "contributors"  : [],

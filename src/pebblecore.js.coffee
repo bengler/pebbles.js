@@ -1,7 +1,14 @@
 _ = require('underscore')
 $ = require('jquery')
 
-pebblecore = {VERSION: '0.0.0'}
+console.log(exports)
+pebblecore = exports if exports?
+pebblecore ||= {}
+
+pebblecore.VERSION = '0.0.0'
+
+state = {connector: null}
+pebblecore.state = state
 
 # ---------------------------------------------------------
 #  Connectors
@@ -45,7 +52,7 @@ class BasicConnector extends AbstractConnector
       error: (error) -> 
         deferred.reject(error)
       headers: headers
-    deferred.promise
+    deferred.promise()
 
 # An EasyXDM-based connection for cross domain situations
 class XDMConnector extends AbstractConnector
@@ -67,26 +74,18 @@ class XDMConnector extends AbstractConnector
       deferred.reject(error)
     config = {url: url, data: params, method: method, headers: headers}
     @_xhr.request config, success, error
-    deferred.promise
-  
-
-# Register a promise of connection. During boot, clients can get in line for a connection to be established
-# like this: pebblecore.connected.then( do stuff with the live connection )
-pebblecore.connector = null
-connected_deferred = $.Deferred()
-pebblecore.connected = connected_deferred.promise
+    deferred.promise()
   
 pebblecore.connect = (host) ->  
-  if host? && host != window.location.host
-    # We are running off-site and need to initiate the cross domain stuff
+  if window? && host? && host != window.location.host
+    # We are running in a browser, off-site and need to initiate the cross domain stuff
     $.getScript "http://#{host}/api/connector/v1/assets/easyXDM.js", ->
-      pebblecore.connector = new XDMConnector(host)
-      connected_deferred.resolve(pebblecore.connector) if connected_deferred?
+      state.connector = new XDMConnector(host)
+      $(pebblecore).trigger("connected")
   else
     # Just basic ajax, thank you very much
-    pebblecore.connector = new BasicConnector()
-    connected_deferred.resolve(pebblecore.connector) if connected_deferred?
-  connected_deferred = null
+    state.connector = new BasicConnector()
+    $(pebblecore).trigger("connected")
 
 # ---------------------------------------------------------
 #  Services
@@ -107,17 +106,15 @@ class pebblecore.GenericService
   service_url: (path) -> 
     @base_url+path
   perform: (method, url, params) ->
-    pebblecore.connector.perform(method, @service_url(url), params)
+    state.connector.perform(method, @service_url(url), params)
   get: (url, params) ->
     @perform('GET', url, params)
   cached_get: (url) ->
-    pebblecore.connector.cached_get(@service_url(url))
+    state.connector.cached_get(@service_url(url))
   post: (url, params) ->
     @perform('POST', url, params)
   delete: (url, params) ->
     @perform('DELETE', url, params)
-
-pebblecore.services = new pebblecore.ServiceSet
 
 # ---------------------------------------------------------
 #  Uids
@@ -196,7 +193,4 @@ _.extend Uid,
 
 pebblecore.Uid = Uid
 
-if exports?
-  _.extend(exports, pebblecore)
-else
-  @pebblecore = pebblecore
+@pebblecore = pebblecore unless exports?

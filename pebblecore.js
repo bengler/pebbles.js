@@ -3,7 +3,7 @@
 /* pebblecore.js.coffee */
 
 (function() {
-  var $, AbstractConnector, BasicConnector, InvalidUidError, Uid, XDMConnector, connected_deferred, pebblecore, _,
+  var $, AbstractConnector, BasicConnector, InvalidUidError, Uid, XDMConnector, pebblecore, state, _,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -11,7 +11,19 @@
 
   $ = require('jquery');
 
-  pebblecore = {};
+  console.log(exports);
+
+  if (typeof exports !== "undefined" && exports !== null) pebblecore = exports;
+
+  pebblecore || (pebblecore = {});
+
+  pebblecore.VERSION = '0.0.0';
+
+  state = {
+    connector: null
+  };
+
+  pebblecore.state = state;
 
   AbstractConnector = (function() {
 
@@ -70,7 +82,7 @@
         },
         headers: headers
       });
-      return deferred.promise;
+      return deferred.promise();
     };
 
     return BasicConnector;
@@ -114,34 +126,23 @@
         headers: headers
       };
       this._xhr.request(config, success, error);
-      return deferred.promise;
+      return deferred.promise();
     };
 
     return XDMConnector;
 
   })(AbstractConnector);
 
-  pebblecore.connector = null;
-
-  connected_deferred = $.Deferred();
-
-  pebblecore.connected = connected_deferred.promise;
-
   pebblecore.connect = function(host) {
-    if ((host != null) && host !== window.location.host) {
-      $.getScript("http://" + host + "/api/connector/v1/assets/easyXDM.js", function() {
-        pebblecore.connector = new XDMConnector(host);
-        if (connected_deferred != null) {
-          return connected_deferred.resolve(pebblecore.connector);
-        }
+    if ((typeof window !== "undefined" && window !== null) && (host != null) && host !== window.location.host) {
+      return $.getScript("http://" + host + "/api/connector/v1/assets/easyXDM.js", function() {
+        state.connector = new XDMConnector(host);
+        return $(pebblecore).trigger("connected");
       });
     } else {
-      pebblecore.connector = new BasicConnector();
-      if (connected_deferred != null) {
-        connected_deferred.resolve(pebblecore.connector);
-      }
+      state.connector = new BasicConnector();
+      return $(pebblecore).trigger("connected");
     }
-    return connected_deferred = null;
   };
 
   pebblecore.ServiceSet = (function() {
@@ -175,7 +176,7 @@
     };
 
     GenericService.prototype.perform = function(method, url, params) {
-      return pebblecore.connector.perform(method, this.service_url(url), params);
+      return state.connector.perform(method, this.service_url(url), params);
     };
 
     GenericService.prototype.get = function(url, params) {
@@ -183,7 +184,7 @@
     };
 
     GenericService.prototype.cached_get = function(url) {
-      return pebblecore.connector.cached_get(this.service_url(url));
+      return state.connector.cached_get(this.service_url(url));
     };
 
     GenericService.prototype.post = function(url, params) {
@@ -197,8 +198,6 @@
     return GenericService;
 
   })();
-
-  pebblecore.services = new pebblecore.ServiceSet;
 
   InvalidUidError = (function(_super) {
 
@@ -307,9 +306,7 @@
 
   pebblecore.Uid = Uid;
 
-  if (typeof exports !== "undefined" && exports !== null) {
-    _.extend(exports, pebblecore);
-  } else {
+  if (typeof exports === "undefined" || exports === null) {
     this.pebblecore = pebblecore;
   }
 
