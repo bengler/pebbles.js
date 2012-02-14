@@ -1,5 +1,5 @@
 {
-  "name"          : "resolvecore",
+  "name"          : "pebblecore",
   "description"   : "JS Resolve models",
   "url"           : "http://resolvehq.com",
   "author"        : "Bengler <bengler@bengler.no>",
