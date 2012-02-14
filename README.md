@@ -1,6 +1,6 @@
-# Resolvecore
+# Pebblecore
 
-JS Models for Resolve-applications
+Core javascript library for Pebbles-applications
 
 ## Getting started
 
