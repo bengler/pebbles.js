@@ -1,7 +1,7 @@
 _ = require('underscore')
 $ = require('jquery')
 
-pebblecore = {}
+pebblecore = {VERSION: '0.0.0'}
 
 # ---------------------------------------------------------
 #  Connectors
