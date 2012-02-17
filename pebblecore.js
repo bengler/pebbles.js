@@ -9,9 +9,7 @@
 
   _ = require('underscore');
 
-  $ = require('jquery');
-
-  console.log(exports);
+  $ = require('jQuery');
 
   if (typeof exports !== "undefined" && exports !== null) pebblecore = exports;
 
