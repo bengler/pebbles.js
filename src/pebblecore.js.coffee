@@ -1,7 +1,6 @@
 _ = require('underscore')
 $ = require('jquery')
 
-console.log(exports)
 pebblecore = exports if exports?
 pebblecore ||= {}
 
