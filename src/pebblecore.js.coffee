@@ -1,5 +1,5 @@
 _ = require('underscore')
-$ = require('jquery')
+$ = require('jQuery')
 
 pebblecore = exports if exports?
 pebblecore ||= {}
