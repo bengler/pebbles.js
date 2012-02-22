@@ -1,5 +1,3 @@
-
-
 /* pebblecore.js.coffee */
 
 (function() {
