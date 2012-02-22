@@ -1,6 +1,6 @@
 $ = require('jquery')
 _ = require('underscore')
-lib = require('../pebblecore')
+lib = require('../index')
 should = require('should')
 
 describe 'Connector', ->
