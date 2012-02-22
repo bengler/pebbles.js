@@ -1,1 +1,1 @@
-module.exports = require("./src/pebblecore.coffee")
+module.exports = require("./src/pebblecore")
