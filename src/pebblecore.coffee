@@ -42,15 +42,16 @@ class BasicConnector extends AbstractConnector
     deferred = $.Deferred()
     $.ajax url,
       data: params
-      type: method
+      type: method  
+      headers: headers
       success: (response) ->
         try
-          deferred.resolve(JSON.parse(response))
+          response = JSON.parse(response)
         catch error
-          deferred.resolve(response)
+        deferred.resolve(response)
       error: (error) -> 
         deferred.reject(error)
-      headers: headers
+
     deferred.promise()
 
 # An EasyXDM-based connection for cross domain situations
