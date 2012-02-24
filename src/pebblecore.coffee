@@ -129,17 +129,20 @@ class Uid
     if arguments.length == 1 and typeof arguments[0] == 'string'
       return Uid.fromString(arguments[0])
 
-    parse_klass = (value)=>
+    parse_klass = (value)->
       return null if !value
       throw new InvalidUidError("Invalid klass '#{value}'") unless Uid.valid_klass(value)
       value
 
-    parse_path = (value)=>
+    parse_path = (value)->
       return null if !value
       throw new InvalidUidError("Invalid path '#{value}'") unless Uid.valid_path(value)
       $.trim(value) || null
 
-    parse_oid = (value)=>
+    extract_realm = (path)->
+      path.split(".")[0] if path
+
+    parse_oid = (value)->
       return null if !value
       throw new InvalidUidError("Invalid oid '#{value}'") unless Uid.valid_oid(value)
       $.trim(value) || null
@@ -147,6 +150,7 @@ class Uid
     @klass = parse_klass(klass)
     @path = parse_path(path)
     @oid = parse_oid(oid)
+    @realm = extract_realm(path)
 
     throw new InvalidUidError("Missing klass in uid") unless @klass
     throw new InvalidUidError("A valid uid must specify either path or oid") unless @path || @oid
@@ -155,13 +159,13 @@ class Uid
     new Uid(@klass, @path, @oid)
 
   toString: ()->
-    "#{@klass}:#{@path}#{('$'+@oid if @oid) || ''}"
+    "#{@klass}:#{@path || ''}#{('$'+@oid if @oid) || ''}"
 
 _.extend Uid,
   fromString: (string) ->
     [klass, path, oid] = Uid.raw_parse(string)
     new Uid(klass, path, oid)
-
+ 
   raw_parse: (string)->
     re = /((.*)^[^:]+)?\:([^\$]*)?\$?(.*$)?/
     return [] unless match = string.match(re)
@@ -178,19 +182,23 @@ _.extend Uid,
     [uid.klass, uid.path, uid.oid]
 
   valid_label: (value)->
-    value.match /^[a-zA-Z0-9_]+$/
+    value.match /^[a-zA-Z0-9_-]+$/
 
   valid_klass: (value)->
-    Uid.valid_label(value)
-
+    return false if value.match /^\./
+    return false if value == ""
+    (return false unless Uid.valid_label(label)) for label in value.split('.')
+    true
+    
   valid_path:(value)->
-    _.each value.split('.'), (label)->
-      return false unless Uid.valid_label(label)
+    return true if value == ''
+    (return false unless Uid.valid_label(label)) for label in value.split('.')
     true
 
   valid_oid:(value)->
-    Uid.valid_label(value)
+    value != null && value.indexOf('/') == -1
 
 pebblecore.Uid = Uid
+pebblecore.InvalidUidError = InvalidUidError
 
 @pebblecore = pebblecore unless exports?
