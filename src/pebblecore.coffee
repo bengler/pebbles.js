@@ -187,12 +187,14 @@ _.extend Uid,
   valid_klass: (value)->
     return false if value.match /^\./
     return false if value == ""
-    (return false unless Uid.valid_label(label)) for label in value.split('.')
+    for label in value.split('.')
+      return false unless Uid.valid_label(label)
     true
     
   valid_path:(value)->
     return true if value == ''
-    (return false unless Uid.valid_label(label)) for label in value.split('.')
+    for label in value.split('.')
+      return false unless Uid.valid_label(label)
     true
 
   valid_oid:(value)->

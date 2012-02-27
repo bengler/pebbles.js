@@ -61,27 +61,29 @@ describe 'Uid', ->
     uid.toString().should.eql "klass:some.path$oid"
 
   it "raises an error if parameter is neither string or hash", ->
-    (-> Uid.fromString []).should.throw
+    (-> Uid.fromString []).should.throw()
+    (-> Uid.fromString NaN).should.throw()
+    (-> Uid.fromString Number()).should.throw()
 
   it "raises an exception when you try to create an invalid uid", ->
     (-> new Uid '!', 'some.path', 'oid').should.throw InvalidUidError
 
   describe "klass", ->
-    uid = Uid.fromString "klass:path$oid"
+    path_oid = "path$oid"
 
     it "allows sub-klasses", ->
-      (-> uid.klass = "!" ).should.not.throw
-  ###
+      (-> Uid.fromString "sub.sub.class:#{path_oid}" ).should.not.throw()
+
       describe "is valid", ->
-        %w(. - _ 8).each, -> |nice_character|
+        (c for c in '.-_8').forEach (nice_character) ->
           it "with '#{nice_character}'", ->
-            (-> uid.klass = "!" ).should.not.throw
-  
+            (-> Uid.fromString "a#{nice_character}b:#{path_oid}" ).should.not.throw()
+
       describe "is invalid", ->
-        %w(! / : $ % $).each, -> |funky_character|
-          specify "with '#{funky_character}'", ->
-            (-> uid.klass = "!" ).should.throw Pebblebed::InvalidUid
-  ###
+        (c for c in '!/:$%').forEach (funky_character) ->
+          it "with '#{funky_character}'", ->
+            (-> Uid.fromString "a#{funky_character}b:#{path_oid}" ).should.throw InvalidUidError
+  
   describe "oid", ->
     [
       "abc123",
