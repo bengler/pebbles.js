@@ -9,14 +9,10 @@ Install node and npm
     $ sudo port install node
     $ sudo port install npm
 
-Install gems
+Install module dependencies
 
-    $ bundle install
+    $ npm install
 
 Run tests
 
-    $ bundle exec rake test:run
-
-Build
-
-    $ bundle exec rake lib:build
+    $ node_modules/.bin/mocha
