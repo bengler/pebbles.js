@@ -10,9 +10,9 @@
   },
   "devDependencies": {
     "mocha": "git://github.com/bjoerge/mocha",
-    "should": ">=0.5.1",
-    "jquery": ">=1.6.3",
-    "coffee-script": "< 1.2.0"
+    "should": "~> 0.5.1",
+    "jquery": "git://github.com/bjoerge/jquery-node#1.7.1",
+    "coffee-script": "~> 1.2.0"
   },
   "lib": ".",
   "main": "index.js",
