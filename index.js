@@ -1,3 +1,3 @@
-module.exports.uid = require("./src/uid");
-module.exports.connector = require('./src/connector');
-module.exports.service = require('./src/service');
+module.exports.uid = require("./lib/uid");
+module.exports.connector = require('./lib/connector');
+module.exports.service = require('./lib/service');
