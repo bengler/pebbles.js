@@ -1,30 +1,8 @@
-$ = require('jquery')
-_ = require('underscore')
-lib = require('../index')
-should = require('should')
+should = require "should"
 
-describe 'Connector', ->
-  it "can connect", ->
-    should.not.exist(lib.state.connector)
-    lib.connect()
-    should.exist(lib.state.connector)
-
-  it "will trigger a connect event", ->
-    eventTriggered = false
-    $(lib).bind "connected", ->
-      eventTriggered = true
-    lib.connect()
-    eventTriggered.should.be.true
-
-describe 'ServiceSet', ->
-  it "can describe a service and calculate certain values for it", ->
-    set = new lib.ServiceSet({grove: 1})
-    set.should.have.property('grove')
-    set.grove.service_url("/post").should.equal("/api/grove/v1/post")
+Uid = require("..").uid.Uid
 
 describe 'Uid', ->
-  Uid = lib.Uid
-  InvalidUidError = lib.InvalidUidError
   it "can parse one", ->
     [klass, path, oid] = Uid.parse("post:a.b.c$1")
     klass.should.equal('post')
@@ -66,7 +44,7 @@ describe 'Uid', ->
     (-> Uid.fromString Number()).should.throw()
 
   it "raises an exception when you try to create an invalid uid", ->
-    (-> new Uid '!', 'some.path', 'oid').should.throw InvalidUidError
+    (-> new Uid '!', 'some.path', 'oid').should.throw Uid.InvalidUidError
 
   describe "klass", ->
     path_oid = "path$oid"
@@ -82,7 +60,7 @@ describe 'Uid', ->
       describe "is invalid", ->
         (c for c in '!/:$%').forEach (funky_character) ->
           it "with '#{funky_character}'", ->
-            (-> Uid.fromString "a#{funky_character}b:#{path_oid}" ).should.throw InvalidUidError
+            (-> Uid.fromString "a#{funky_character}b:#{path_oid}" ).should.throw Uid.InvalidUidError
   
   describe "oid", ->
     [
