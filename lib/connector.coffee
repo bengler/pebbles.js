@@ -1,8 +1,9 @@
 connector = exports
+path = require("path")
 
 # Represents a connection to a pebbles endpoint.
 class connector.AbstractConnector
-  constructor: ->
+  constructor: ({@host})->
     @cache = {}
   cached_get: (url) ->
     @cache[url] ||= @perform('GET', url)
@@ -20,45 +21,52 @@ class connector.AbstractConnector
       method = 'POST'
     [method, url, params, headers]
 
+  isXDomain: ->
+    @host and @host isnt window?.location.host
+    
 # Your garden variety ajax driven connection
 class connector.BasicConnector extends connector.AbstractConnector
-  constructor: ->
-    super
-  perform: (method, url, params, headers) -> 
+  perform: (method, url, params, headers) ->
+    
+    url = "http://#{path.join(@host, url)}" if @host
     [method, url, params, headers] = @method_override(method, url, params, headers)
+
     deferred = $.Deferred()
-    $.ajax url,
+    requestOpts =
       data: params
       type: method  
       headers: headers
       success: (response) ->
-        try
-          response = JSON.parse(response)
-        catch error
-        deferred.resolve(response)
-      error: (error) -> 
+        deferred.resolve(try JSON.parse(response) catch e then response)
+      error: (error) ->
         deferred.reject(error)
+
+    #console.log("XDomain #{@isXDomain()}")
+    requestOpts.xhrFields ||= {}
+    requestOpts.xhrFields.withCredentials = true if @isXDomain()
+
+    $.ajax url, requestOpts
 
     deferred.promise()
 
-# An EasyXDM-based connection for cross domain situations
+# An EasyXDM-based connection for cross domain situations where CORS isnt supported by browser
 class connector.XDMConnector extends connector.AbstractConnector
-  constructor:(@host) ->
+  constructor: ->
     super
-    @_xhr = new easyXDM.Rpc remote: "http://#{@host}/api/connector/v1/assets/cors.html",
+    @_xhr = new easyXDM.Rpc remote: "http://#{@host}/easyxdm/cors/index.html",
       remote:
         request: {} # request is exposed by /cors/
 
   perform: (method, url, params, headers) ->
     [method, url, params, headers] = @method_override(method, url, params, headers)
+
     deferred = $.Deferred()
+
     success = (response) ->
-      try
-        deferred.resolve(JSON.parse(response.data))
-      catch error
-        deferred.resolve(response.data)
-    error = (error) -> 
+      deferred.resolve(try JSON.parse(response.data) catch e then response)
+
+    error = (error) ->
       deferred.reject(error)
-    config = {url: url, data: params, method: method, headers: headers}
-    @_xhr.request config, success, error
+
+    @_xhr.request {url, method, headers, data: params}, success, error
     deferred.promise()

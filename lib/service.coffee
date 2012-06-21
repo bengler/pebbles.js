@@ -7,17 +7,18 @@ service = exports
 
 service.state = connector: null
 
-service.connect = (host) ->  
-  if window? && host? && host != window.location.host
-    # We are running in a browser, off-site and need to initiate the cross domain stuff
-    $.getScript "http://#{host}/api/connector/v1/assets/easyXDM.js", ->
-      service.state.connector = new connector.XDMConnector(host)
-      $(service).trigger("connected")
+service.connect = (host) ->
+  deferred = $.Deferred()
+  if host? and host isnt window?.location.host and not $.support.cors 
+    # We are running off site in a browser that doesnt support CORS and need to fall back to easyXDM for crosstalk
+    $.getScript "http://#{host}/easyxdm/easyXDM.js", ->
+      service.state.connector = new connector.XDMConnector({host})
+      deferred.resolve()
   else
-    # Just basic ajax, thank you very much
-    service.state.connector = new connector.BasicConnector()
-    $(service).trigger("connected")
-
+    # Just basic ajax, thank you very much (note: jquery will gracefully turn to CORS if browser supports it)
+    service.state.connector = new connector.BasicConnector({host})
+    deferred.resolve()
+  deferred.promise()
 
 class service.ServiceSet
   constructor: (services) ->
