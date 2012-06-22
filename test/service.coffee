@@ -12,9 +12,8 @@ describe 'Connector', ->
 
   it "will trigger a connect event", ->
     eventTriggered = false
-    $(service).bind "connected", ->
+    service.connect().then ->
       eventTriggered = true
-    service.connect()
     eventTriggered.should.be.true
 
 describe 'ServiceSet', ->
