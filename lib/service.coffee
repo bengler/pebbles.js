@@ -7,6 +7,8 @@ service = exports
 
 service.state = connector: null
 
+supportedServices = {}
+
 service.connect = (host) ->
   deferred = $.Deferred()
   if host? and host isnt window?.location.host and not $.support.cors 
@@ -25,7 +27,8 @@ class service.ServiceSet
     @use(services) if services?
   use: (services) ->
     _.each services, (version, name) =>
-      @[name] = new service.GenericService
+      constructor = supportedServices[name] || service.GenericService
+      @[name] = new constructor {version, name}
         name: name
         version: version
 
@@ -44,3 +47,24 @@ class service.GenericService
     @perform('POST', url, params)
   delete: (url, params) ->
     @perform('DELETE', url, params)
+
+class service.CheckpointService extends service.GenericService
+
+  login: (provider)->
+    done = $.Deferred()
+    win = window.open(@service_url("/login/#{provider}"), "checkpoint-login", 'width=600,height=400')
+    poll = =>
+      return done.reject() if win.closed
+
+      @get("/identities/me").then (response)=>
+        if (response.identity?.id == undefined)
+          setTimeout(poll, 1000)
+        else
+          win.close()
+          done.resolve(response)          
+    setTimeout(poll, 2000)
+    done
+
+supportedServices.checkpoint = service.CheckpointService 
+
+
