@@ -8,11 +8,11 @@ class connector.AbstractConnector
   cached_get: (url) ->
     @cache[url] ||= @perform('GET', url)
   # TODO: Expire keys when the cache grows big
-  clear_cache: -> 
+  clear_cache: ->
     @cache = {}
   # Pass parameters to .perform through this to
   # implement '_method' override hack
-  method_override: (method, url, params, headers) ->    
+  method_override: (method, url, params, headers) ->
     if method != 'GET' && method != 'POST'
       headers ||= {}
       headers["X-Http-Method-Override"] = method
@@ -23,18 +23,18 @@ class connector.AbstractConnector
 
   isXDomain: ->
     @host and @host isnt window?.location.host
-    
+
 # Your garden variety ajax driven connection
 class connector.BasicConnector extends connector.AbstractConnector
   perform: (method, url, params, headers) ->
-    
+
     url = "http://#{path.join(@host, url)}" if @host
     [method, url, params, headers] = @method_override(method, url, params, headers)
 
     deferred = $.Deferred()
     requestOpts =
       data: params
-      type: method  
+      type: method
       headers: headers
       success: (response) ->
         deferred.resolve(try JSON.parse(response) catch e then response)

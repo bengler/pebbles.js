@@ -43,7 +43,7 @@ _.extend Uid,
   fromString: (string) ->
     [klass, path, oid] = Uid.raw_parse(string)
     new Uid(klass, path, oid)
- 
+
   raw_parse: (string)->
     re = /((.*)^[^:]+)?\:([^\$]*)?\$?(.*$)?/
     return [] unless match = string.match(re)
@@ -68,7 +68,7 @@ _.extend Uid,
     for label in value.split('.')
       return false unless Uid.valid_label(label)
     true
-    
+
   valid_path: (value)->
     return true if value == ''
     for label in value.split('.')

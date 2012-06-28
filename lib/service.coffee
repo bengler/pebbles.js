@@ -11,7 +11,7 @@ supportedServices = {}
 
 service.connect = (host) ->
   deferred = $.Deferred()
-  if host? and host isnt window?.location.host and not $.support.cors 
+  if host? and host isnt window?.location.host and not $.support.cors
     # We are running off site in a browser that doesnt support CORS and need to fall back to easyXDM for crosstalk
     $.getScript "http://#{host}/easyxdm/easyXDM.js", ->
       service.state.connector = new connector.XDMConnector({host})
@@ -35,7 +35,7 @@ class service.ServiceSet
 class service.GenericService
   constructor: (options) ->
     @base_url = "/api/#{options.name}/v#{options.version}"
-  service_url: (path) -> 
+  service_url: (path) ->
     @base_url+path
   perform: (method, url, params) ->
     service.state.connector.perform(method, @service_url(url), params)
@@ -61,10 +61,10 @@ class service.CheckpointService extends service.GenericService
           setTimeout(poll, 1000)
         else
           win.close()
-          done.resolve(response)          
+          done.resolve(response)
     setTimeout(poll, 2000)
     done
 
-supportedServices.checkpoint = service.CheckpointService 
+supportedServices.checkpoint = service.CheckpointService
 
 
