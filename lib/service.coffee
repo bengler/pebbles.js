@@ -64,6 +64,8 @@ class service.CheckpointService extends service.GenericService
           done.resolve(response)
     setTimeout(poll, 2000)
     done
+  logout: ->
+    @get("/logout")
 
 supportedServices.checkpoint = service.CheckpointService
 
