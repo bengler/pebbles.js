@@ -56,10 +56,16 @@ class service.CheckpointService extends service.GenericService
               resolves with the selected service""" 
   
   login: (provider)->
-    unless provider?
-      @selectProvider().then (provider) => @login(provider)
-
     done = $.Deferred()
+
+    unless provider?
+      @selectProvider().then (provider) =>
+        @login(provider).then(
+          ((response)-> done.resolve(response)),
+          ((response)-> done.reject(response))
+        )
+      return done
+
     win = window.open(@service_url("/login/#{provider}"), "checkpoint-login", 'width=600,height=400')
     poll = =>
       return done.reject() if win.closed
