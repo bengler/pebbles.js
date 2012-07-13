@@ -50,7 +50,15 @@ class service.GenericService
 
 class service.CheckpointService extends service.GenericService
 
+  selectProvider: ->
+    throw """Not implemented.
+              Please implement this method in your app and make sure it returns a promise which
+              resolves with the selected service""" 
+  
   login: (provider)->
+    unless provider?
+      @selectProvider().then (provider) => @login(provider)
+
     done = $.Deferred()
     win = window.open(@service_url("/login/#{provider}"), "checkpoint-login", 'width=600,height=400')
     poll = =>
