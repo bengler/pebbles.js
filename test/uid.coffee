@@ -1,6 +1,6 @@
 should = require "should"
 
-Uid = require("..").uid.Uid
+{Uid, InvalidUidError} = require("..").uid
 
 describe 'Uid', ->
   it "can parse one", ->
@@ -44,7 +44,7 @@ describe 'Uid', ->
     (-> Uid.fromString Number()).should.throw()
 
   it "raises an exception when you try to create an invalid uid", ->
-    (-> new Uid '!', 'some.path', 'oid').should.throw Uid.InvalidUidError
+    (-> new Uid '!', 'some.path', 'oid').should.throw InvalidUidError
 
   describe "klass", ->
     path_oid = "path$oid"
@@ -60,7 +60,7 @@ describe 'Uid', ->
       describe "is invalid", ->
         (c for c in '!/:$%').forEach (funky_character) ->
           it "with '#{funky_character}'", ->
-            (-> Uid.fromString "a#{funky_character}b:#{path_oid}" ).should.throw Uid.InvalidUidError
+            (-> Uid.fromString "a#{funky_character}b:#{path_oid}" ).should.throw InvalidUidError
   
   describe "oid", ->
     [
