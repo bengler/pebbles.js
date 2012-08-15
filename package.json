@@ -16,7 +16,7 @@
   },
   "scripts": {
     "test": "node_modules/.bin/mocha -r should",
-    "jenkins-test": "node_modules/.bin/mocha -r should -R tap"
+    "jenkins-test": "node_modules/.bin/mocha -r should -R tap > test.tap"
   },
   "lib": ".",
   "main": "index.js",
