@@ -47,6 +47,8 @@ class service.GenericService
     @perform('POST', url, params)
   delete: (url, params) ->
     @perform('DELETE', url, params)
+  put: (url, params) ->
+    @perform('PUT', url, params)
 
 class service.CheckpointService extends service.GenericService
 
