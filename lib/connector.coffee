@@ -78,12 +78,16 @@ class connector.BasicConnector extends connector.AbstractConnector
 class connector.XDMConnector extends connector.AbstractConnector
   constructor: ->
     super
+    easyXDMUrl = "http://#{@host}/easyxdm/easyXDM.js"
+    loadEasyXDM = $.getScript(easyXDMUrl)
     @ready = $.Deferred()
-    $.getScript("http://#{@host}/easyxdm/easyXDM.js").then =>
+    loadEasyXDM.then =>
       _xhr = new window.easyXDM.Rpc remote: "http://#{@host}/easyxdm/cors/index.html",
         remote:
           request: {} # request is exposed by /cors/
-      setTimeout (=> @ready.resolve(_xhr)), 1000
+      @ready.resolve(_xhr)
+    loadEasyXDM.fail ->
+      throw new Error("Could not load easyXDM from #{easyXDMUrl}. Verify that it is hosted at that location.")
 
   perform: (method, url, params, headers) ->
     [method, url, params, headers] = @methodOverride(method, url, params, headers)
@@ -98,6 +102,5 @@ class connector.XDMConnector extends connector.AbstractConnector
       throw new Error("EasyXDM request error: #{error.message} (error code #{error.code}).")
 
     @ready.then (xhr)->
-
       xhr.request {url, method, headers, data: params}, success, error
     deferred.promise()
