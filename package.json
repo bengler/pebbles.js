@@ -1,9 +1,14 @@
 {
-  "name": "pebblecore",
-  "description": "JS core tools for Pebbles applications",
-  "url": "http://resolvehq.com",
+  "name": "pebbles",
+  "version": "0.1.2",
+  "description": "Core tools for Pebbles applications (see pebblestack.org)",
+  "url": "http://pebblestack.org",
   "author": "Bengler <bengler@bengler.no>",
   "contributors": [],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/pebblestack/pebbles.js.git"
+  },
   "dependencies": {
     "backbone": ">=0.9.1",
     "underscore": ">=1.3.1",
@@ -20,7 +25,6 @@
   },
   "lib": ".",
   "main": "index.js",
-  "version": "0.1.2",
   "optionalDependencies": {},
   "engines": {
     "node": "*"
