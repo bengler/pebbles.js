@@ -1,52 +1,53 @@
 $ = require("jquery")
-_ = require("underscore")
 
 connector = require("./connector")
 
 service = exports
 
-service.state = connector: null
-
 supportedServices = {}
 
-service.connect = (host) ->
-  deferred = $.Deferred()
-  if host? and host isnt window?.location.host and not $.support.cors
-    # We are running off site in a browser that doesnt support CORS and need to fall back to easyXDM for crosstalk
-    $.getScript "http://#{host}/easyxdm/easyXDM.js", ->
-      service.state.connector = new connector.XDMConnector({host})
-      deferred.resolve()
-  else
-    # Just basic ajax, thank you very much (note: jquery will gracefully turn to CORS if browser supports it)
-    service.state.connector = new connector.BasicConnector({host})
-    deferred.resolve()
-  deferred.promise()
-
 class service.ServiceSet
-  constructor: (services) ->
-    @use(services) if services?
+  constructor: ({host}) ->
+    # Don't keep host if its the same as the domain the page is on
+    @host = host if host isnt window?.location.host
+
   use: (services) ->
-    _.each services, (version, name) =>
+    for name, version of services
       constructor = supportedServices[name] || service.GenericService
-      @[name] = new constructor {version, name}
+      @[name] = new constructor {host: @host, version, name}
         name: name
         version: version
+    this
 
 class service.GenericService
-  constructor: (options) ->
-    @base_url = "/api/#{options.name}/v#{options.version}"
+  constructor: ({@host, name, version}) ->
+    @basePath = "/api/#{name}/v#{version}"
+    @connector = connector.connect(@host)
+
   service_url: (path) ->
-    @base_url+path
-  perform: (method, url, params) ->
-    service.state.connector.perform(method, @service_url(url), params)
-  get: (url, params) ->
-    @perform('GET', url, params)
-  cached_get: (url) ->
-    service.state.connector.cached_get(@service_url(url))
-  post: (url, params) ->
-    @perform('POST', url, params)
-  delete: (url, params) ->
-    @perform('DELETE', url, params)
+    console.log("GenericService.service_url is deprecated. Use serviceUrl instead")
+    @serviceUrl(path)
+
+  serviceUrl: (path) ->
+    url = @basePath+path
+    url = "http://#{@host}#{url}" if @host
+    url
+
+  perform: (method, endpoint, params) ->
+    @connector.perform(method, @serviceUrl(endpoint), params)
+
+  get: (endpoint, params) ->
+    @perform('GET', endpoint, params)
+
+  cachedGet: (endpoint) ->
+    @connector.cachedGet(@serviceUrl(endpoint))
+
+  post: (endpoint, params) ->
+    @perform('POST', endpoint, params)
+
+  delete: (endpoint, params) ->
+    @perform('DELETE', endpoint, params)
+
   put: (url, params) ->
     @perform('PUT', url, params)
 
@@ -68,7 +69,8 @@ class service.CheckpointService extends service.GenericService
         )
       return done
 
-    win = window.open(@service_url("/login/#{provider}"), "checkpoint-login", 'width=600,height=400')
+    # IE doesn't allow non-alphanumeric characters in window name. Changing from "checkpoint-login" to "checkpointlogin"
+    win = window.open(@serviceUrl("/login/#{provider}"), "checkpointlogin", 'width=600,height=400')
     poll = =>
       return done.reject() if win.closed
 
@@ -81,7 +83,7 @@ class service.CheckpointService extends service.GenericService
     setTimeout(poll, 2000)
     done
   logout: ->
-    @get("/logout")
+    @post("/logout")
 
 supportedServices.checkpoint = service.CheckpointService
 
