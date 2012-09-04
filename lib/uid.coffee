@@ -1,7 +1,5 @@
 _ = require("underscore")
 
-trim = String::trim && (str)-> str.trim() || (str) -> str.replace(/^\s+|\s+$/g,'')
-
 class Uid
   constructor: (klass, path, oid)->
     if arguments.length == 1 and typeof arguments[0] == 'string'
@@ -15,7 +13,7 @@ class Uid
     parse_path = (value)->
       return null if !value
       throw new InvalidUidError("Invalid path '#{value}'") unless Uid.valid_path(value)
-      trim(value) || null
+      value.trim() || null
 
     extract_realm = (path)->
       path.split(".")[0] if path
@@ -23,7 +21,7 @@ class Uid
     parse_oid = (value)->
       return null if !value
       throw new InvalidUidError("Invalid oid '#{value}'") unless Uid.valid_oid(value)
-      trim(value) || null
+      value.trim() || null
 
     @klass = parse_klass(klass)
     @path = parse_path(path)
