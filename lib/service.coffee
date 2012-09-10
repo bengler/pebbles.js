@@ -7,7 +7,7 @@ service = exports
 supportedServices = {}
 
 class service.ServiceSet
-  constructor: ({@host}={})->
+  constructor: ({host}={})->
     # Don't keep host if its the same as the domain the page is on
     @host = host if host isnt window?.location.host
 
