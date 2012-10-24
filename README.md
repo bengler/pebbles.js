@@ -1,13 +1,13 @@
-# Pebblecore
+# Pebbles.js
 
 Core javascript library for Pebbles-applications
 
+## Prerequisites
+
+Node.js 0.8 or higher
+
+
 ## Getting started
-
-Install node and npm
-
-    $ sudo port install node
-    $ sudo port install npm
 
 Install module dependencies
 
@@ -15,4 +15,4 @@ Install module dependencies
 
 Run tests
 
-    $ node_modules/.bin/mocha
+    $ npm test
