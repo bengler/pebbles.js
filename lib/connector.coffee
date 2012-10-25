@@ -7,19 +7,14 @@ $ = require("jquery")
 # Abstracts away differences between connections to same domain and cross domain
 #
 
-# Cache on key=host to make sure we only instantiate one connector per host
-connectorsCache = {}
-
 # Factory that returns a new connector to a given host
 connector.connect = (host)->
-  return connectorsCache[host] if connectorsCache[host]
-
-  if host? and @host isnt window?.location.host and not $.support.cors
+  if host? and host isnt window?.location.host and not $.support.cors
     # We are running off site in a browser that doesnt support CORS and need to fall back to easyXDM for crosstalk
-    connectorsCache[host] = new connector.XDMConnector({host})
+    new connector.XDMConnector({host})
   else
     # Just basic ajax, thank you very much (note: jquery will gracefully turn to CORS if browser supports it)
-    connectorsCache[host] = new connector.BasicConnector({host})
+    new connector.BasicConnector({host})
 
 # Represents a connection to a pebbles endpoint.
 class connector.AbstractConnector
@@ -76,18 +71,28 @@ class connector.BasicConnector extends connector.AbstractConnector
 
 # An EasyXDM-based connection for cross domain situations where CORS isnt supported by browser
 class connector.XDMConnector extends connector.AbstractConnector
+
+  # Loads easyXDM.js from the server we are making connections to. Also ensures its only loaded once
+  initEasyXDMFrom = do ->
+    cache = {}
+    (host)->
+      return cache[host] if cache[host]
+
+      loaded = cache[host] = $.Deferred()
+
+      easyXDMUrl = "//#{host}/easyxdm/easyXDM.js" # Todo: make easyxdm url configurable
+      loadEasyXDM = $.getScript(easyXDMUrl)
+      loadEasyXDM.then ->
+        rpc = new window.easyXDM.Rpc remote: "http://#{host}/easyxdm/cors/index.html", {remote: request: {}}
+        loaded.resolve(rpc)
+      loadEasyXDM.fail =>
+        throw new Error("Could not load easyXDM from #{easyXDMUrl}. Verify that it is hosted at that location.")
+        delete @cache[host]
+      loaded
+
   constructor: ->
     super
-    easyXDMUrl = "http://#{@host}/easyxdm/easyXDM.js"
-    loadEasyXDM = $.getScript(easyXDMUrl)
-    @ready = $.Deferred()
-    loadEasyXDM.then =>
-      _xhr = new window.easyXDM.Rpc remote: "http://#{@host}/easyxdm/cors/index.html",
-        remote:
-          request: {} # request is exposed by /cors/
-      @ready.resolve(_xhr)
-    loadEasyXDM.fail ->
-      throw new Error("Could not load easyXDM from #{easyXDMUrl}. Verify that it is hosted at that location.")
+    @ready = initEasyXDMFrom(@host)
 
   perform: (method, url, params, headers) ->
     [method, url, params, headers] = @methodOverride(method, url, params, headers)
@@ -101,6 +106,6 @@ class connector.XDMConnector extends connector.AbstractConnector
       deferred.reject(error)
       throw new Error("EasyXDM request error: #{error.message} (error code #{error.code}).")
 
-    @ready.then (xhr)->
-      xhr.request {url, method, headers, data: params}, success, error
+    @ready.then (rpc)->
+      rpc.request {url, method, headers, data: params}, success, error
     deferred.promise()
