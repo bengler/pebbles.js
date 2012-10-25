@@ -20,17 +20,19 @@ class service.ServiceSet
     this
 
 class service.GenericService
-  constructor: ({@host, name, version}) ->
-    @basePath = "/api/#{name}/v#{version}"
+  constructor: ({@host, @name, @version}) ->
     @connector = connector.connect(@host)
+
+  basePath: ->
+    "/api/#{@name}/v#{@version}"
 
   service_url: (path) ->
     console.log("GenericService.service_url is deprecated. Use serviceUrl instead")
     @serviceUrl(path)
 
   serviceUrl: (path) ->
-    url = @basePath+path
-    url = "http://#{@host}#{url}" if @host
+    url = @basePath()+path
+    url = "//#{@host}#{url}" if @host
     url
 
   perform: (method, endpoint, params) ->
