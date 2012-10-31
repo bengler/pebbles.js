@@ -25,6 +25,10 @@ describe 'ServiceSet', ->
     services.anyservice.host.should.equal("baz.com")
     services.anyservice.serviceUrl("/qux").should.equal("//baz.com/api/anyservice/v1/qux")
 
+  it "can be configured to use current document host per service", ->
+    services = new ServiceSet(host: "foobar.com").use(anyservice: {version: 1, host: null})
+    services.anyservice.serviceUrl("/qux").should.equal("/api/anyservice/v1/qux")
+
 describe 'GenericService', ->
   it "can be initialized with host, name and version", ->
     service = new GenericService(host: 'foobar.com', name: "fooservice", version: 1)

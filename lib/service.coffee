@@ -21,7 +21,7 @@ class service.ServiceSet
 
       @[name] = new Constructor(
         name: name
-        host: (opts.host || @host)
+        host: if opts.hasOwnProperty('host') then opts.host else @host
         version: opts.version)
     this
 
