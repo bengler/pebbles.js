@@ -14,7 +14,6 @@ class service.ServiceSet
   use: (services) ->
     for name, opts of services
       unless isNaN(Number(opts))
-        console.warn("Please update your code to call ServiceSet#use() with a config object like this: {service: {version: 1}}")
         opts = version: opts
       Constructor = supportedServices[name] || service.GenericService
 
