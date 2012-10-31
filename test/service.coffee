@@ -12,12 +12,12 @@ describe 'ServiceSet', ->
     delete global.window
 
   it "can be initialized with a set of services", ->
-    services = (new ServiceSet).use(myservice: 1, otherservice: 2)
+    services = (new ServiceSet).use(myservice: {version: 1}, otherservice: {version: 2})
     services.myservice.should.be.an.instanceof(GenericService)
     services.otherservice.should.be.an.instanceof(GenericService)
 
   it "can be initialized with a host", ->
-    services = new ServiceSet(host: "foobar.com").use(anyservice: 1)
+    services = new ServiceSet(host: "foobar.com").use(anyservice: {version: 1})
     services.anyservice.host.should.equal("foobar.com")
 
 describe 'GenericService', ->

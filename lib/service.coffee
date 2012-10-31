@@ -12,11 +12,18 @@ class service.ServiceSet
     @host = host if host isnt window?.location.host
 
   use: (services) ->
-    for name, version of services
-      constructor = supportedServices[name] || service.GenericService
-      @[name] = new constructor {host: @host, version, name}
+    for name, opts of services
+      unless isNaN(Number(opts))
+        console.warn("Please update your code to call ServiceSet#use() with a config object like this: {service: {version: 1}}")
+        opts = version: opts
+      Constructor = supportedServices[name] || service.GenericService
+
+      throw Error('Missing required option "version"') unless opts.version
+
+      @[name] = new Constructor(
         name: name
-        version: version
+        host: (opts.host || @host)
+        version: opts.version)
     this
 
 class service.GenericService
