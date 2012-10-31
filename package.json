@@ -1,6 +1,6 @@
 {
   "name": "pebbles",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Core tools for Pebbles applications (see pebblestack.org)",
   "url": "http://pebblestack.org",
   "author": "Bengler <bengler@bengler.no>",
