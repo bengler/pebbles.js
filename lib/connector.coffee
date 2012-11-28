@@ -27,7 +27,7 @@ class connector.AbstractConnector
 
   cachedGet: (url) ->
     @cache[url] ||= @perform('GET', url)
-    # TODO: Expire keys when the cache grows big
+  # TODO: Expire keys when the cache grows big
 
   clearCache: ->
     @cache = {}
@@ -61,7 +61,10 @@ class connector.BasicConnector extends connector.AbstractConnector
       error: (error) ->
         deferred.reject(error)
 
-    #console.log("XDomain #{@isXDomain()}")
+    if params and method == 'POST'
+      requestOpts.contentType = 'application/json'
+      requestOpts.data = JSON.stringify(params)
+
     requestOpts.xhrFields ||= {}
     requestOpts.xhrFields.withCredentials = true if @isXDomain()
 
