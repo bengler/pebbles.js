@@ -63,7 +63,7 @@ class connector.BasicConnector extends connector.AbstractConnector
 
     if params and method == 'POST'
       requestOpts.contentType = 'application/json'
-      requestOpts.data = JSON.stringify(params)
+      requestOpts.data = if Object::toString.call(params) == '[object String]' then params else JSON.stringify(params)
 
     requestOpts.xhrFields ||= {}
     requestOpts.xhrFields.withCredentials = true if @isXDomain()
