@@ -79,23 +79,30 @@ class connector.XDMConnector extends connector.AbstractConnector
   initEasyXDMFrom = do ->
     cache = {}
     (host)->
-      return cache[host] if cache[host]
 
+      # Ensure we load/initialize easyXDM at most once per host
+      return cache[host] if cache[host]
       loaded = cache[host] = $.Deferred()
 
-      easyXDMUrl = "//#{host}/easyxdm/easyXDM.js" # Todo: make easyxdm url configurable
-      loadEasyXDM = $.getScript(easyXDMUrl)
-      loadEasyXDM.then ->
-        rpc = new window.easyXDM.Rpc remote: "http://#{host}/easyxdm/cors/index.html", {remote: request: {}}
-        loaded.resolve(rpc)
-      loadEasyXDM.fail =>
-        throw new Error("Could not load easyXDM from #{easyXDMUrl}. Verify that it is hosted at that location.")
-        delete @cache[host]
-      loaded
+      basePath = "/api/checkpoint/v1/resources/easyXDM"
+
+      easyXDMScriptUrl = "//#{host}#{basePath}/easyXDM.min.js"
+
+      # Remember $.getScript will always succeed, even if the server returns 404
+      $.getScript(easyXDMScriptUrl).then ->
+        easyXDM = window.easyXDM? and window.easyXDM.noConflict('Pebbles')
+        if easyXDM
+          rpc = new easyXDM.Rpc(remote: "http://#{host}#{basePath}/cors/index.html", {remote: request: {}})
+          loaded.resolve(rpc)
+        else
+          delete cache[host]
+          loaded.reject("Could not load easyXDM from #{easyXDMScriptUrl}. Verify that the script is served from that location.")
 
   constructor: ->
     super
     @ready = initEasyXDMFrom(@host)
+    @ready.fail (message)->
+      throw new Error("Unable to initialize easyXDM: #{message}")
 
   perform: (method, url, params, headers) ->
     [method, url, params, headers] = @methodOverride(method, url, params, headers)
