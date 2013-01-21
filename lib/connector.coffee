@@ -35,8 +35,8 @@ class connector.AbstractConnector
   # Pass parameters to .perform through this to
   # implement '_method' override hack
   methodOverride: (method, url, params, headers) ->
+    headers ||= {}
     if method != 'GET' && method != 'POST'
-      headers ||= {}
       headers["X-Http-Method-Override"] = method
       params ||= {}
       params['_method'] = method
@@ -117,5 +117,9 @@ class connector.XDMConnector extends connector.AbstractConnector
       throw new Error("EasyXDM request error: #{error.message} (error code #{error.code}).")
 
     @ready.then (rpc)->
+      if params and method == 'POST'
+        headers['Content-Type'] = 'application/json'
+        params = JSON.parse(params) if Object::toString.call(params) == '[object String]'
+
       rpc.request {url, method, headers, data: params}, success, error
     deferred.promise()
