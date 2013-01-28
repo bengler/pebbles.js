@@ -64,9 +64,9 @@ class service.CheckpointService extends service.GenericService
   selectProvider: ->
     throw """Not implemented.
               Please implement this method in your app and make sure it returns a promise which
-              resolves with the selected service""" 
-  
-  login: (provider)->
+              resolves with the selected service"""
+
+  login: (provider, opts={})->
     done = $.Deferred()
 
     unless provider?
@@ -77,8 +77,11 @@ class service.CheckpointService extends service.GenericService
         )
       return done
 
+    url = @serviceUrl("/login/#{provider}")
+    url += "?redirect_to=#{opts.redirectTo}" if opts.redirectTo?
+
     # IE doesn't allow non-alphanumeric characters in window name. Changing from "checkpoint-login" to "checkpointlogin"
-    win = window.open(@serviceUrl("/login/#{provider}"), "checkpointlogin", 'width=600,height=400')
+    win = window.open(url, "checkpointlogin", 'width=600,height=400')
     poll = =>
 
       @get("/identities/me").then (response)=>
@@ -90,6 +93,7 @@ class service.CheckpointService extends service.GenericService
           done.resolve(response)
     setTimeout(poll, 2000)
     done
+
   logout: ->
     @post("/logout")
 
