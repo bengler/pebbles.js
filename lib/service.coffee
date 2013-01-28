@@ -71,7 +71,7 @@ class service.CheckpointService extends service.GenericService
 
     unless provider?
       @selectProvider().then (provider) =>
-        @login(provider).then(
+        @login(provider, opts).then(
           ((response)-> done.resolve(response)),
           ((response)-> done.reject(response))
         )
@@ -79,7 +79,6 @@ class service.CheckpointService extends service.GenericService
 
     url = @serviceUrl("/login/#{provider}")
     url += "?redirect_to=#{opts.redirectTo}" if opts.redirectTo?
-
     # IE doesn't allow non-alphanumeric characters in window name. Changing from "checkpoint-login" to "checkpointlogin"
     win = window.open(url, "checkpointlogin", 'width=600,height=400')
     poll = =>
