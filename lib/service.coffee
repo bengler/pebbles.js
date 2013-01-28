@@ -82,11 +82,10 @@ class service.CheckpointService extends service.GenericService
     # IE doesn't allow non-alphanumeric characters in window name. Changing from "checkpoint-login" to "checkpointlogin"
     win = window.open(url, "checkpointlogin", 'width=600,height=400')
     poll = =>
-
       @get("/identities/me").then (response)=>
         if (response.identity?.id == undefined)
           return done.reject("Login window closed by user") if win.closed
-          setTimeout(poll, 1000)
+          setTimeout(poll, opts.pollInterval || 1000)
         else
           win.close()
           done.resolve(response)
