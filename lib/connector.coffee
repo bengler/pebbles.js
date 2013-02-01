@@ -66,7 +66,11 @@ class connector.BasicConnector extends connector.AbstractConnector
       requestOpts.data = if Object::toString.call(params) == '[object String]' then params else JSON.stringify(params)
 
     requestOpts.xhrFields ||= {}
-    requestOpts.xhrFields.withCredentials = true if @isXDomain()
+    if @isXDomain()
+      requestOpts.xhrFields.withCredentials = true
+      # "jQuery by default doesn't set X-Requested-With for cross-domain requests, so you need to do this manually."
+      #   - http://www.codeotaku.com/journal/2011-05/cross-domain-ajax/index
+      requestOpts.headers["X-Requested-With"] = "XMLHttpRequest"
 
     $.ajax url, requestOpts
 
