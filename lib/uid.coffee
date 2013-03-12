@@ -1,5 +1,9 @@
 _ = require("underscore")
 
+class InvalidUidError extends Error
+  name: 'InvalidUidError'
+  constructor: (@message)->
+
 class Uid
   constructor: (klass, path, oid)->
     if arguments.length == 1 and typeof arguments[0] == 'string'
@@ -75,9 +79,5 @@ _.extend Uid,
 
   valid_oid:(value)->
     value != null && value.indexOf('/') == -1
-
-class Uid.InvalidUidError extends Error
-  name: 'Uid.InvalidUidError'
-  constructor: (@message)->
 
 exports.Uid = Uid
