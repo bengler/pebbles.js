@@ -59,6 +59,12 @@ class service.GenericService
   put: (url, params) ->
     @perform('PUT', url, params)
 
+
+timed = (ms, f)->
+  dfd = $.Deferred()
+  setTimeout(dfd.resolve, ms)
+  dfd.then(f)
+
 class service.CheckpointService extends service.GenericService
 
   selectProvider: ->
@@ -67,30 +73,27 @@ class service.CheckpointService extends service.GenericService
               resolves with the selected service"""
 
   login: (provider, opts={})->
-    done = $.Deferred()
-
     unless provider?
-      @selectProvider().then (provider) =>
-        @login(provider, opts).then(
-          ((response)-> done.resolve(response)),
-          ((response)-> done.reject(response))
-        )
-      return done
+      return @selectProvider().then (provider)=>
+        @login(provider, opts)
 
     url = @serviceUrl("/login/#{provider}")
     url += "?redirect_to=#{opts.redirectTo}" if opts.redirectTo?
-    # IE doesn't allow non-alphanumeric characters in window name. Changing from "checkpoint-login" to "checkpointlogin"
+
+    # Note: IE doesn't allow non-alphanumeric characters in window name. Changed from "checkpoint-login" to "checkpointlogin"
     win = window.open(url, "checkpointlogin", 'width=600,height=400')
+    
     poll = =>
-      @get("/identities/me").then (response)=>
-        if (response.identity?.id == undefined)
-          return done.reject("Login window closed by user") if win.closed
-          setTimeout(poll, opts.pollInterval || 1000)
-        else
+      @get("/identities/me").then (me)->
+        if me.identity?.id? and not me.identity.provisional
           win.close()
-          done.resolve(response)
-    setTimeout(poll, 2000)
-    done
+          return me
+        if win.closed
+          return $.Deferred().reject("Login window closed by user")
+
+        timed(opts.pollInterval || 1000, poll)
+
+    poll()
 
   logout: ->
     @post("/logout")
