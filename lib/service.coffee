@@ -59,20 +59,15 @@ class service.GenericService
   put: (url, params) ->
     @perform('PUT', url, params)
 
-
-timed = (ms, f)->
-  dfd = $.Deferred()
-  setTimeout(dfd.resolve, ms)
-  dfd.then(f)
-
 class service.CheckpointService extends service.GenericService
 
   selectProvider: ->
     throw """Not implemented.
-              Please implement this method in your app and make sure it returns a promise which
-              resolves with the selected service"""
+          Please implement this method in your app and make sure it returns a promise which
+          resolves with the selected service"""
 
   login: (provider, opts={})->
+    opts.pollInterval ||= 1000
     unless provider?
       return @selectProvider().then (provider)=>
         @login(provider, opts)
@@ -82,18 +77,19 @@ class service.CheckpointService extends service.GenericService
 
     # Note: IE doesn't allow non-alphanumeric characters in window name. Changed from "checkpoint-login" to "checkpointlogin"
     win = window.open(url, "checkpointlogin", 'width=600,height=400')
-    
+
+    deferred = $.Deferred()
     poll = =>
       @get("/identities/me").then (me)->
         if me.identity?.id? and not me.identity.provisional
           win.close()
-          return me
+          deferred.resolve(me)
+          clearInterval(pollId)
         if win.closed
-          return $.Deferred().reject("Login window closed by user")
+          deferred.reject("Login window closed by user")
 
-        timed(opts.pollInterval || 1000, poll)
-
-    poll()
+    pollId = setInterval poll, opts.pollInterval
+    deferred
 
   logout: ->
     @post("/logout")
