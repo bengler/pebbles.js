@@ -67,13 +67,18 @@ class service.CheckpointService extends service.GenericService
           resolves with the selected service"""
 
   login: (provider, opts={})->
+
     opts.pollInterval ||= 1000
+    opts.display ||= 'popup'
+
     unless provider?
       return @selectProvider().then (provider)=>
         @login(provider, opts)
 
-    url = @serviceUrl("/login/#{provider}")
-    url += "?redirect_to=#{opts.redirectTo}" if opts.redirectTo?
+    params = []
+    params.push("display=#{opts.display}")
+    params.push("redirect_to=#{opts.redirectTo}") if opts.redirectTo?
+    url = @serviceUrl("/login/#{provider}?#{params.join("&")}")
 
     # Note: IE doesn't allow non-alphanumeric characters in window name. Changed from "checkpoint-login" to "checkpointlogin"
     win = window.open(url, "checkpointlogin", 'width=600,height=400')
