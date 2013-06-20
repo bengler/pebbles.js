@@ -51,30 +51,25 @@ class connector.BasicConnector extends connector.AbstractConnector
   perform: (method, url, params, headers) ->
     [method, url, params, headers] = @methodOverride(method, url, params, headers)
 
-    deferred = $.Deferred()
     requestOpts =
       data: params
       type: method
       headers: headers
-      success: (response) ->
-        deferred.resolve(try JSON.parse(response) catch e then response)
-      error: (error) ->
-        deferred.reject(error)
 
     if params and method == 'POST'
       requestOpts.contentType = 'application/json'
       requestOpts.data = if Object::toString.call(params) == '[object String]' then params else JSON.stringify(params)
 
-    requestOpts.xhrFields ||= {}
     if @isXDomain()
+      requestOpts.xhrFields ||= {}
       requestOpts.xhrFields.withCredentials = true
+
       # "jQuery by default doesn't set X-Requested-With for cross-domain requests, so you need to do this manually."
       #   - http://www.codeotaku.com/journal/2011-05/cross-domain-ajax/index
       requestOpts.headers["X-Requested-With"] = "XMLHttpRequest"
 
-    $.ajax url, requestOpts
-
-    deferred.promise()
+    $.ajax(url, requestOpts).then (response)->
+        try JSON.parse(response) catch e then response
 
 # An EasyXDM-based connection for cross domain situations where CORS isnt supported by browser
 class connector.XDMConnector extends connector.AbstractConnector
@@ -113,17 +108,17 @@ class connector.XDMConnector extends connector.AbstractConnector
 
     deferred = $.Deferred()
 
-    success = (response) ->
-      deferred.resolve(try JSON.parse(response.data) catch e then response)
-
-    error = (error) ->
-      deferred.reject(error)
-      throw new Error("EasyXDM request error: #{error.message} (error code #{error.code}).")
-
     @ready.then (rpc)->
       if params and method == 'POST'
         headers['Content-Type'] = 'application/json'
         params = JSON.parse(params) if Object::toString.call(params) == '[object String]'
+
+      success = (response) ->
+        deferred.resolve(try JSON.parse(response.data) catch e then response)
+  
+      error = (error) ->
+        deferred.reject(error)
+        throw new Error("EasyXDM request error: #{error.message} (error code #{error.code}).")
 
       rpc.request {url, method, headers, data: params}, success, error
     deferred.promise()

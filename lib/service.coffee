@@ -2,11 +2,16 @@ $ = require("jquery")
 
 connector = require("./connector")
 
+{EventEmitter} = require("events")
+
 service = exports
 
 supportedServices = {}
 
-class service.ServiceSet
+passevent = (type, scope)->
+  (data)=> scope.emit(type, data)
+
+class service.ServiceSet extends EventEmitter
   constructor: ({host}={})->
     # Don't keep host if its the same as the domain the page is on
     @host = host if host isnt window?.location.host
@@ -19,13 +24,19 @@ class service.ServiceSet
 
       throw Error('Missing required option "version"') unless opts.version
 
-      @[name] = new Constructor(
+      s = new Constructor(
         name: name
         host: if opts.hasOwnProperty('host') then opts.host else @host
         version: opts.version)
+
+      s.on 'request', passevent('request', @)
+      s.on 'success', passevent('success', @)
+      s.on 'fail', passevent('fail', @)
+      s.on 'done', passevent('done', @)
+      @[name] = s
     this
 
-class service.GenericService
+class service.GenericService extends EventEmitter
   constructor: ({@host, @name, @version}) ->
     @connector = connector.connect(@host)
 
@@ -42,7 +53,13 @@ class service.GenericService
     url
 
   perform: (method, endpoint, params) ->
-    @connector.perform(method, @serviceUrl(endpoint), params)
+    request = @connector.perform(method, @serviceUrl(endpoint), params)
+    data = {service: this, request}
+    @emit('request', data)
+    request.then => @emit('success', data)
+    request.fail => @emit('fail', data)
+    request.always => @emit('done', data)
+    request
 
   get: (endpoint, params) ->
     @perform('GET', endpoint, params)
