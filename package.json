@@ -18,11 +18,15 @@
     "should": "latest",
     "location": "latest",
     "sinon": "latest",
-    "coffee-script": "~> 1.3.0"
+    "coffee-script": "~1.6.3"
   },
   "scripts": {
     "test": "node_modules/.bin/mocha test -r should --globals window",
-    "jenkins-test": "node_modules/.bin/mocha -r should --globals window -R tap > test.tap"
+    "jenkins-test": "node_modules/.bin/mocha -r should --globals window -R tap > test.tap",
+    "build": "node_modules/.bin/coffee -c lib/",
+    "clean": "rm lib/*.js",
+    "prepublish": "npm run build",
+    "postpublish": "npm run clean"
   },
   "lib": ".",
   "main": "index.js",
