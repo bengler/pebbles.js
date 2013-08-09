@@ -120,8 +120,7 @@ class service.CheckpointService extends service.GenericService
 
     # Note: IE doesn't allow non-alphanumeric characters in window name. Changed from "checkpoint-login" to "checkpointlogin"
     win = window.open(url, "checkpointlogin_"+new Date().getTime(), 'width=1024,height=800')
-    #window.location.href = url
-    return
+    #window.location.href = url    return
     @_registerFocusMessageHandler()
     deferred = $.Deferred()
     poll = =>
