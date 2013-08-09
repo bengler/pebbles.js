@@ -11,6 +11,14 @@ supportedServices = {}
 passevent = (type, scope)->
   (data)=> scope.emit(type, data)
 
+setCookie = (name, value, minutes)->
+  expires = ""
+  if minutes
+    date = new Date()
+    date.setTime(date.getTime()+(minutes*60*1000))
+    expires = "; expires="+date.toGMTString()
+  document.cookie = "#{name}=#{value}#{expires}; path=/"
+
 class service.ServiceSet extends EventEmitter
   constructor: ({host}={})->
     # Don't keep host if its the same as the domain the page is on
@@ -102,8 +110,18 @@ class service.CheckpointService extends service.GenericService
     params.push("redirect_to=#{opts.redirectTo}") if opts.redirectTo?
     url = @serviceUrl("/login/#{provider}?#{params.join("&")}")
 
+    # Hack to avoid getting stuck in browsers which doesn't open new windows but rather navigates to urls passed to
+    # window.open(), or ignores the target="_blank" attribute on <a tags. This applies to, for example, the in-app 
+    # browser in Twitter for iOS.
+    # Note: The following cookie should be read from the page located at the opts.redirectTo url, which then must be 
+    # located at the current domain.
+    # This hack should be considered a *last resort* workaround.
+    setCookie("checkpoint_login_source_url", document.location.href)
+
     # Note: IE doesn't allow non-alphanumeric characters in window name. Changed from "checkpoint-login" to "checkpointlogin"
-    win = window.open(url, "checkpointlogin_"+new Date().getTime(), 'width=1024,height=800')
+    #win = window.open(url, "checkpointlogin_"+new Date().getTime(), 'width=1024,height=800')
+    window.location.href = url
+    return
     @_registerFocusMessageHandler()
     deferred = $.Deferred()
     poll = =>
