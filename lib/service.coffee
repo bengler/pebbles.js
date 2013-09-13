@@ -104,9 +104,7 @@ class service.CheckpointService extends service.GenericService
     url = @serviceUrl("/login/#{provider}?#{params.join("&")}")
 
     # Note: IE doesn't allow non-alphanumeric characters in window name. Changed from "checkpoint-login" to "checkpointlogin"
-    #win = window.open(url, "checkpointlogin_"+new Date().getTime(), 'width=1024,height=800')
-    window.location.href = url
-    return
+    win = window.open(url, "checkpointlogin_"+new Date().getTime(), 'width=1024,height=800')
     @_registerFocusMessageHandler()
     deferred = $.Deferred()
     poll = =>
