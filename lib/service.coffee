@@ -54,7 +54,7 @@ class service.GenericService extends EventEmitter
   
   perform: (method, endpoint, params) ->
     request = @connector.perform(method, @serviceUrl(endpoint), params)
-    data = {service: this, request}
+    data = {method, endpoint, params, service: this, request}
     @emit('request', data)
     request.then => @emit('success', data)
     request.fail => @emit('fail', data)
