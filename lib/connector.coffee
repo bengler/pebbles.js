@@ -68,8 +68,7 @@ class connector.BasicConnector extends connector.AbstractConnector
       #   - http://www.codeotaku.com/journal/2011-05/cross-domain-ajax/index
       requestOpts.headers["X-Requested-With"] = "XMLHttpRequest"
 
-    $.ajax(url, requestOpts).then (response)->
-      try JSON.parse(response) catch e then response
+    $.ajax(url, requestOpts)
 
 # An EasyXDM-based connection for cross domain situations where CORS isnt supported by browser
 class connector.XDMConnector extends connector.AbstractConnector
