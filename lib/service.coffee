@@ -109,7 +109,7 @@ class service.CheckpointService extends service.GenericService
     deferred = $.Deferred()
     poll = =>
       @get("/identities/me").then (me)->
-        if me.identity?.id? and not me.identity.provisional
+        if me.identity?.id? and not me.identity.provisional and me.accounts.indexOf(provider) > -1
           win.close()
           window.focus()
           deferred.resolve(me)
