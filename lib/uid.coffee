@@ -41,6 +41,22 @@ class Uid
   toString: ()->
     "#{@klass}:#{@path || ''}#{('$'+@oid if @oid) || ''}"
 
+  parent: (parentKlass)->
+    labels = @path.split('.')
+    path = ''
+    for label, i in labels
+      if i == labels.length - 1
+        path = "#{path}$#{label}"
+      else if i == 0
+        path = label
+      else
+        path = "#{path}.#{label}"
+    "#{parentKlass || @klass}:#{path}"
+
+  children: (childKlass)->
+    "#{childKlass || '*'}:#{@path}.#{@oid}"
+
+
 _.extend Uid,
   fromString: (string) ->
     [klass, path, oid] = Uid.raw_parse(string)
