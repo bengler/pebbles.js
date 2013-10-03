@@ -8,7 +8,7 @@ describe 'Uid', ->
     klass.should.equal('post')
     path.should.equal('a.b.c')
     oid.should.equal('1')
-    
+
   it "parses a full uid correctly", ->
     uid = Uid.fromString "klass:path$oid"
     uid.klass.should.eql "klass"
@@ -45,6 +45,41 @@ describe 'Uid', ->
 
   it "raises an exception when you try to create an invalid uid", ->
     (-> new Uid '!', 'some.path', 'oid').should.throw InvalidUidError
+
+  describe 'Parent', ->
+
+    it "has a parent", ->
+      uid = new Uid "klass:some.old.path$oid"
+      uid.parent().should.eql "klass:some.old$path"
+
+    it "has a parent even without an oid", ->
+      uid = new Uid "klass:some.old.path"
+      uid.parent().should.eql "klass:some.old$path"
+
+    it "has a parent even with only one label", ->
+      uid = new Uid "klass:some"
+      uid.parent().should.eql "klass:$some"
+
+    it "has a parent with a different klass", ->
+      uid = new Uid "klass:some.old.path$oid"
+      uid.parent('otherklass').should.eql "otherklass:some.old$path"
+
+  describe 'Children', ->
+
+    it "has children", ->
+      uid = new Uid "klass:some.old.path$oid"
+      uid.children().should.eql "*:some.old.path.oid"
+
+    it "has children with a different klass", ->
+      uid = new Uid "klass:some.old.path$oid"
+      uid.children('otherklass').should.eql "otherklass:some.old.path.oid"
+
+  describe 'ChildPath', ->
+
+    it "has a childPath", ->
+      uid = new Uid "klass:some.old.path$oid"
+      uid.childPath().should.eql "some.old.path.oid"
+
 
   describe "klass", ->
     path_oid = "path$oid"
