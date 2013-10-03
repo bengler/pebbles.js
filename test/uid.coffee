@@ -74,6 +74,12 @@ describe 'Uid', ->
       uid = new Uid "klass:some.old.path$oid"
       uid.children('otherklass').should.eql "otherklass:some.old.path.oid"
 
+  describe 'ChildPath', ->
+
+    it "has a childPath", ->
+      uid = new Uid "klass:some.old.path$oid"
+      uid.childPath().should.eql "some.old.path.oid"
+
 
   describe "klass", ->
     path_oid = "path$oid"

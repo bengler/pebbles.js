@@ -53,8 +53,11 @@ class Uid
         path = "#{path}.#{label}"
     "#{parentKlass || @klass}:#{path}"
 
+  childPath: ()->
+    "#{@path}.#{@oid}"
+
   children: (childKlass)->
-    "#{childKlass || '*'}:#{@path}.#{@oid}"
+    "#{childKlass || '*'}:#{this.childPath()}"
 
 
 _.extend Uid,
