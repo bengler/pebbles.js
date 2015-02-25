@@ -1,3 +1,7 @@
+# Deprecated:
+
+Use [pebbles-client.js](bengler/pebbles-client.js) or [pebbles-uid.js](bengler/pebbles-uid.js) instead
+
 # Pebbles.js
 
 Core javascript library for Pebbles-applications
