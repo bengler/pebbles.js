@@ -15,20 +15,20 @@ class service.ServiceSet extends EventEmitter
   constructor: ({host}={})->
     # Don't keep host if its the same as the domain the page is on
     @host = host if host isnt window?.location.host
-  
+
   use: (services) ->
     for name, opts of services
       unless isNaN(Number(opts))
         opts = version: opts
       Constructor = supportedServices[name] || service.GenericService
-  
+
       throw Error('Missing required option "version"') unless opts.version
-  
+
       s = new Constructor(
         name: name
         host: if opts.hasOwnProperty('host') then opts.host else @host
         version: opts.version)
-  
+
       s.on 'request', passevent('request', @)
       s.on 'success', passevent('success', @)
       s.on 'fail', passevent('fail', @)
@@ -39,19 +39,19 @@ class service.ServiceSet extends EventEmitter
 class service.GenericService extends EventEmitter
   constructor: ({@host, @name, @version}) ->
     @connector = connector.connect(@host)
-  
+
   basePath: ->
     "/api/#{@name}/v#{@version}"
-  
+
   service_url: (path) ->
     console.log("GenericService.service_url is deprecated. Use serviceUrl instead")
     @serviceUrl(path)
-  
+
   serviceUrl: (path) ->
     url = @basePath()+path
     url = "//#{@host}#{url}" if @host
     url
-  
+
   perform: (method, endpoint, params) ->
     request = @connector.perform(method, @serviceUrl(endpoint), params)
     data = {method, endpoint, params, service: this, request}
@@ -60,19 +60,19 @@ class service.GenericService extends EventEmitter
     request.fail => @emit('fail', data)
     request.always => @emit('done', data)
     request
-  
+
   get: (endpoint, params) ->
     @perform('GET', endpoint, params)
-  
+
   cachedGet: (endpoint) ->
     @connector.cachedGet(@serviceUrl(endpoint))
-  
+
   post: (endpoint, params) ->
     @perform('POST', endpoint, params)
-  
+
   delete: (endpoint, params) ->
     @perform('DELETE', endpoint, params)
-  
+
   put: (url, params) ->
     @perform('PUT', url, params)
 
@@ -114,7 +114,7 @@ class service.CheckpointService extends service.GenericService
           window.focus()
           deferred.resolve(me)
           clearInterval(pollId)
-        if win.closed
+        else if win.closed
           deferred.reject("Login window closed by user")
 
     pollId = setInterval poll, opts.pollInterval
